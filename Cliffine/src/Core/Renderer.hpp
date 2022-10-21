@@ -20,16 +20,18 @@ namespace clf
 		Device& device;
 
 		VkCommandPool commandPool;
-		VkCommandBuffer commandBuffer;
+		vec<VkCommandBuffer> commandBuffers;
 
-		VkSemaphore imageAvailableSemaphore;
-		VkSemaphore renderFinishedSemaphore;
-		VkFence inFlightFence;
+		vec<VkSemaphore> imageAvailableSemaphores;
+		vec<VkSemaphore> renderFinishedSemaphores;
+		vec<VkFence> inFlightFences;
+
+		u32 currentFrame;
 
 		void InitCommandPool();
-		void InitCommandBuffer();
+		void InitCommandBuffers();
 		void InitSyncObjects();
 
-		void SetCommandBuffer(const u32& imageIndex);
+		void SetCommandBuffer();
 	};
 }

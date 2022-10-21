@@ -18,6 +18,7 @@ namespace clf
 		const VkExtent2D GetExtent() const { return extent; }
 		const VkFormat GetImageFormat() const { return imageFormat; }
 		const VkRenderPass GetRenderPass() const { return renderPass; }
+		const u32 GetImageCount() const { return imageCount; }
 
 	private:
 

@@ -3,19 +3,22 @@
 namespace clf
 {
 	Renderer::Renderer(Pipeline& pipeline, Swapchain& swapchain, Device& device)
-		: pipeline(pipeline), swapchain(swapchain), device(device)
+		: pipeline(pipeline), swapchain(swapchain), device(device), currentFrame(0)
 	{
 		InitCommandPool();
-		InitCommandBuffer();
+		InitCommandBuffers();
 		InitSyncObjects();
 	}
 
 	Renderer::~Renderer()
 	{ 
 		vkDestroyCommandPool(device.GetLogicalDevice(), commandPool, nullptr);
-		vkDestroySemaphore(device.GetLogicalDevice(), imageAvailableSemaphore, nullptr);
-		vkDestroySemaphore(device.GetLogicalDevice(), renderFinishedSemaphore, nullptr);
-		vkDestroyFence(device.GetLogicalDevice(), inFlightFence, nullptr);
+		for (auto& ias : imageAvailableSemaphores)
+			vkDestroySemaphore(device.GetLogicalDevice(), ias, nullptr);
+		for (auto& rfs : renderFinishedSemaphores)
+			vkDestroySemaphore(device.GetLogicalDevice(), rfs, nullptr);
+		for (auto& iff : inFlightFences)
+			vkDestroyFence(device.GetLogicalDevice(), iff, nullptr);
 	}
 
 	void Renderer::InitCommandPool()
@@ -31,17 +34,18 @@ namespace clf
 			"Failed to initialize Command Pool!");
 	}
 
-	void Renderer::InitCommandBuffer()
+	void Renderer::InitCommandBuffers()
 	{
+		commandBuffers.resize(swapchain.GetImageCount());
 		VkCommandBufferAllocateInfo allocInfo{};
 		
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool = commandPool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = 1;
-
-		CLF_ASSERT(vkAllocateCommandBuffers(device.GetLogicalDevice(), &allocInfo, &commandBuffer) == VK_SUCCESS,
-			"failed to allocate command buffers!");
+		allocInfo.commandBufferCount = commandBuffers.size();
+		
+		CLF_ASSERT(vkAllocateCommandBuffers(device.GetLogicalDevice(), &allocInfo, commandBuffers.data()) == VK_SUCCESS,
+				"failed to allocate command buffers!");
 	}
 
 	void Renderer::InitSyncObjects()
@@ -53,57 +57,62 @@ namespace clf
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-		CLF_ASSERT(vkCreateSemaphore(device.GetLogicalDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphore) == VK_SUCCESS &&
-			vkCreateSemaphore(device.GetLogicalDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphore) == VK_SUCCESS &&
-			vkCreateFence(device.GetLogicalDevice(), &fenceInfo, nullptr, &inFlightFence) == VK_SUCCESS,
-			"Failed to initialize Sync Objects!");
+		u32 imageCount = swapchain.GetImageCount();
+		imageAvailableSemaphores.resize(imageCount);
+		renderFinishedSemaphores.resize(imageCount);
+		inFlightFences.resize(imageCount);
+
+		for (u32 i = 0; i < imageCount; i++)
+			CLF_ASSERT(vkCreateSemaphore(device.GetLogicalDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) == VK_SUCCESS &&
+				vkCreateSemaphore(device.GetLogicalDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) == VK_SUCCESS &&
+				vkCreateFence(device.GetLogicalDevice(), &fenceInfo, nullptr, &inFlightFences[i]) == VK_SUCCESS,
+				"Failed to initialize Sync Objects!");
 	}
 
 	void Renderer::DrawFrame()
 	{
-		vkWaitForFences(device.GetLogicalDevice(), 1, &inFlightFence, VK_TRUE, UINT64_MAX);
-		vkResetFences(device.GetLogicalDevice(), 1, &inFlightFence);
+		vkWaitForFences(device.GetLogicalDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+		vkResetFences(device.GetLogicalDevice(), 1, &inFlightFences[currentFrame]);
+		vkAcquireNextImageKHR(device.GetLogicalDevice(), swapchain.GetNative(), UINT64_MAX, imageAvailableSemaphores[currentFrame], nullptr, &currentFrame);
 
-		u32 imageIndex;
-		vkAcquireNextImageKHR(device.GetLogicalDevice(), swapchain.GetNative(), UINT64_MAX, imageAvailableSemaphore, nullptr, &imageIndex);
-
-		vkResetCommandBuffer(commandBuffer, 0);
-		SetCommandBuffer(imageIndex);
+		vkResetCommandBuffer(commandBuffers[currentFrame], 0);
+		SetCommandBuffer();
 
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-		VkSemaphore waitSemaphores[] = { imageAvailableSemaphore};
+
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pWaitSemaphores = waitSemaphores;
+		submitInfo.pWaitSemaphores = &imageAvailableSemaphores[currentFrame];
 		submitInfo.pWaitDstStageMask = waitStages;
 		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
+		submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
 
-		VkSemaphore signalSemaphores[] = { renderFinishedSemaphore};
 		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = signalSemaphores;
+		submitInfo.pSignalSemaphores = &renderFinishedSemaphores[currentFrame];
 
-		CLF_ASSERT(vkQueueSubmit(device.GetGraphicsQueue(), 1, &submitInfo, inFlightFence) == VK_SUCCESS,
+		CLF_ASSERT(vkQueueSubmit(device.GetGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) == VK_SUCCESS,
 			"Failed to submit draw Command Buffer!");
 
 		VkPresentInfoKHR presentInfo{};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = signalSemaphores;
+		presentInfo.pWaitSemaphores = &renderFinishedSemaphores[currentFrame];
 
 		presentInfo.swapchainCount = 1;
 		presentInfo.pSwapchains = &swapchain.GetNative();
-		presentInfo.pImageIndices = &imageIndex;
+		presentInfo.pImageIndices = &currentFrame;
 
 		vkQueuePresentKHR(device.GetPresentQueue(), &presentInfo);
+		currentFrame = (currentFrame + 1) % swapchain.GetImageCount();
 	}
 
-	void Renderer::SetCommandBuffer(const u32& imageIndex) 
+	void Renderer::SetCommandBuffer() 
 	{
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		VkCommandBuffer& commandBuffer = commandBuffers[currentFrame];
 
 		CLF_ASSERT(vkBeginCommandBuffer(commandBuffer, &beginInfo) == VK_SUCCESS,
 			"Failed to begin recording Command Buffer!");
@@ -111,7 +120,7 @@ namespace clf
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = swapchain.GetRenderPass();
-		renderPassInfo.framebuffer = swapchain.GetFramebuffer(imageIndex);
+		renderPassInfo.framebuffer = swapchain.GetFramebuffer(currentFrame);
 		renderPassInfo.renderArea.offset = { 0, 0 };
 		renderPassInfo.renderArea.extent = swapchain.GetExtent();
 
@@ -119,7 +128,7 @@ namespace clf
 		renderPassInfo.clearValueCount = 1;
 		renderPassInfo.pClearValues = &clearColor;
 
-		vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(commandBuffers[currentFrame], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.GetNative());
 
 		VkViewport viewport{};
