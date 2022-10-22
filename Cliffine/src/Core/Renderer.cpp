@@ -72,8 +72,17 @@ namespace clf
 	void Renderer::DrawFrame()
 	{
 		vkWaitForFences(device.GetLogicalDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+
+		VkResult result = vkAcquireNextImageKHR(device.GetLogicalDevice(), swapchain.GetNative(), UINT64_MAX, imageAvailableSemaphores[currentFrame], nullptr, &currentFrame);
+		if (result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			swapchain.Reinit();
+			return;
+		}
+		else CLF_ASSERT(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR,
+			"Failed to acquire swapchain image!");
+
 		vkResetFences(device.GetLogicalDevice(), 1, &inFlightFences[currentFrame]);
-		vkAcquireNextImageKHR(device.GetLogicalDevice(), swapchain.GetNative(), UINT64_MAX, imageAvailableSemaphores[currentFrame], nullptr, &currentFrame);
 
 		vkResetCommandBuffer(commandBuffers[currentFrame], 0);
 		SetCommandBuffer();
@@ -104,7 +113,12 @@ namespace clf
 		presentInfo.pSwapchains = &swapchain.GetNative();
 		presentInfo.pImageIndices = &currentFrame;
 
-		vkQueuePresentKHR(device.GetPresentQueue(), &presentInfo);
+		result = vkQueuePresentKHR(device.GetPresentQueue(), &presentInfo);
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+			swapchain.Reinit();
+		else CLF_ASSERT(result == VK_SUCCESS,
+			"Failed to acquire present image!");
+
 		currentFrame = (currentFrame + 1) % swapchain.GetImageCount();
 	}
 

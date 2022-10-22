@@ -11,6 +11,8 @@ namespace clf
 		Swapchain(Device& device);
 		~Swapchain();
 
+		void Reinit();
+
 		VkFramebuffer& GetFramebuffer(const u32& imageIndex) { return framebuffers[imageIndex]; }
 		VkSwapchainKHR& GetNative() { return swapchain; }
 		const u32 GetWidth() const { return extent.width; }

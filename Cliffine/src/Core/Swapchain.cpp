@@ -22,6 +22,13 @@ namespace clf
 		vkDestroyRenderPass(device.GetLogicalDevice(), renderPass, nullptr);
 	}
 
+	void Swapchain::Reinit()
+	{
+		InitSwapchain();
+		InitImageViews();
+		InitFramebuffers();
+	}
+
 	void Swapchain::InitSwapchain()
 	{
 		SwapchainDetails details = device.GetSwapchainDetails();

@@ -71,10 +71,10 @@ namespace clf
 
 			auto debugCreateInfo = CreateDebugMessengerInfo();
 			createInfo.pNext = &debugCreateInfo;
+			CheckValidationLayerSupport();
 		}
 
 		CheckExtensionSupport();
-		CheckValidationLayerSupport();
 
 		CLF_ASSERT(vkCreateInstance(&createInfo, nullptr, &instance) == VK_SUCCESS,
 			"Failed to initialize Device!");
@@ -178,7 +178,7 @@ namespace clf
 					break;
 				}
 
-			CLF_ASSERT(enableValidationLayers && layerFound,
+			CLF_ASSERT(layerFound,
 				"Unavailable validation layers!");
 		}
 	}
