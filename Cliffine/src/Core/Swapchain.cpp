@@ -13,13 +13,34 @@ namespace clf
 
 	Swapchain::~Swapchain()
 	{
-		for (auto framebuffer : framebuffers) {
+		Deinit();
+		vkDestroyRenderPass(device.GetLogicalDevice(), renderPass, nullptr);
+	}
+
+	void Swapchain::Deinit()
+	{
+		for (auto framebuffer : framebuffers)
 			vkDestroyFramebuffer(device.GetLogicalDevice(), framebuffer, nullptr);
-		}
 		vkDestroySwapchainKHR(device.GetLogicalDevice(), swapchain, nullptr);
 		for (auto& imageView : imageViews)
 			vkDestroyImageView(device.GetLogicalDevice(), imageView, nullptr);
-		vkDestroyRenderPass(device.GetLogicalDevice(), renderPass, nullptr);
+	}
+
+	void Swapchain::Reinit()
+	{
+		int width, height;
+		do
+		{
+			glfwGetFramebufferSize(&device.GetWindow().GetNative(), &width, &height);
+			glfwWaitEvents();
+		} while (width == 0 || height == 0);
+
+		vkDeviceWaitIdle(device.GetLogicalDevice());
+		Deinit();
+
+		InitSwapchain();
+		InitImageViews();
+		InitFramebuffers();
 	}
 
 	void Swapchain::InitSwapchain()

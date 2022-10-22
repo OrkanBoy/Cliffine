@@ -5,6 +5,8 @@
 #include "Pipeline.hpp"
 #include "Renderer.hpp"
 
+#include <glm/glm.hpp>
+
 namespace clf
 {
 	class App

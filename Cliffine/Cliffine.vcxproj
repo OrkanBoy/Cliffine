@@ -165,6 +165,7 @@
     <ClInclude Include="src\Core\Pipeline.hpp" />
     <ClInclude Include="src\Core\Renderer.hpp" />
     <ClInclude Include="src\Core\Swapchain.hpp" />
+    <ClInclude Include="src\Core\Vertex.hpp" />
     <ClInclude Include="src\Core\Window.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -185,6 +186,7 @@
     <ClCompile Include="src\Core\Pipeline.cpp" />
     <ClCompile Include="src\Core\Renderer.cpp" />
     <ClCompile Include="src\Core\Swapchain.cpp" />
+    <ClCompile Include="src\Core\Vertex.cpp" />
     <ClCompile Include="src\Core\Window.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
