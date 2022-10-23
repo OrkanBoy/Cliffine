@@ -43,6 +43,13 @@ namespace clf
 		InitFramebuffers();
 	}
 
+	void Swapchain::Reinit()
+	{
+		InitSwapchain();
+		InitImageViews();
+		InitFramebuffers();
+	}
+
 	void Swapchain::InitSwapchain()
 	{
 		SwapchainDetails details = device.GetSwapchainDetails();
