@@ -73,10 +73,10 @@ namespace clf
 	{
 		vkWaitForFences(device.GetLogicalDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
-		VkResult result = vkAcquireNextImageKHR(device.GetLogicalDevice(), swapchain.GetNative(), UINT64_MAX, imageAvailableSemaphores[currentFrame], nullptr, &currentFrame);
+		u32 imageIndex;
+		VkResult result = vkAcquireNextImageKHR(device.GetLogicalDevice(), swapchain.GetNative(), UINT64_MAX, imageAvailableSemaphores[currentFrame], nullptr, &imageIndex);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR)
 		{
-			CLF_WARN("Swap chain Reinit");
 			swapchain.Reinit();
 			return;
 		}
@@ -86,7 +86,7 @@ namespace clf
 		vkResetFences(device.GetLogicalDevice(), 1, &inFlightFences[currentFrame]);
 
 		vkResetCommandBuffer(commandBuffers[currentFrame], 0);
-		SetCommandBuffer();
+		SetCommandBuffer(imageIndex);
 
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -102,6 +102,7 @@ namespace clf
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = &renderFinishedSemaphores[currentFrame];
 
+		//TODO: Sometimes error from unminimising
 		CLF_ASSERT(vkQueueSubmit(device.GetGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) == VK_SUCCESS,
 			"Failed to submit draw Command Buffer!");
 
@@ -112,18 +113,21 @@ namespace clf
 
 		presentInfo.swapchainCount = 1;
 		presentInfo.pSwapchains = &swapchain.GetNative();
-		presentInfo.pImageIndices = &currentFrame;
+		presentInfo.pImageIndices = &imageIndex;
 
 		result = vkQueuePresentKHR(device.GetPresentQueue(), &presentInfo);
-		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || device.GetWindow().framebufferResized)
+		{
 			swapchain.Reinit();
+			device.GetWindow().framebufferResized = false;
+		}
 		else CLF_ASSERT(result == VK_SUCCESS,
 			"Failed to acquire present image!");
 
 		currentFrame = (currentFrame + 1) % swapchain.GetImageCount();
 	}
 
-	void Renderer::SetCommandBuffer() 
+	void Renderer::SetCommandBuffer(const u32& imageIndex)
 	{
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -135,7 +139,7 @@ namespace clf
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = swapchain.GetRenderPass();
-		renderPassInfo.framebuffer = swapchain.GetFramebuffer(currentFrame);
+		renderPassInfo.framebuffer = swapchain.GetFramebuffer(imageIndex);
 		renderPassInfo.renderArea.offset = { 0, 0 };
 		renderPassInfo.renderArea.extent = swapchain.GetExtent();
 

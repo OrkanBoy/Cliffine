@@ -41,13 +41,8 @@ namespace clf
 		InitSwapchain();
 		InitImageViews();
 		InitFramebuffers();
-	}
 
-	void Swapchain::Reinit()
-	{
-		InitSwapchain();
-		InitImageViews();
-		InitFramebuffers();
+		device.GetWindow().framebufferResized = false;
 	}
 
 	void Swapchain::InitSwapchain()

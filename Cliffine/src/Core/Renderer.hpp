@@ -32,6 +32,6 @@ namespace clf
 		void InitCommandBuffers();
 		void InitSyncObjects();
 
-		void SetCommandBuffer();
+		void SetCommandBuffer(const u32& imageIndex);
 	};
 }

@@ -24,6 +24,7 @@ namespace clf
 		const u32 GetImageCount() const { return imageCount; }
 
 	private:
+		static void OnWindowResize(GLFWwindow* window, int width, int height);
 
 		VkSwapchainKHR swapchain;
 

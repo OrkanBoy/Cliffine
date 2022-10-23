@@ -7,14 +7,22 @@ namespace clf
 	{
 		glfwInit();
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 		window = glfwCreateWindow(width, height, name.c_str(), nullptr, nullptr);
+		glfwSetWindowUserPointer(window, this);
+		glfwSetFramebufferSizeCallback(window, OnFrameBufferResize);
 	}
+
 	Window::~Window()
 	{
 		glfwDestroyWindow(window);
 		glfwTerminate();
+	}
+
+	void Window::OnFrameBufferResize(GLFWwindow* window, int width, int height)
+	{
+		auto clfWindow = (Window*)glfwGetWindowUserPointer(window);
+		clfWindow->framebufferResized = true;
 	}
 
 	void Window::InitSurface(VkInstance& instance, VkSurfaceKHR* surface)

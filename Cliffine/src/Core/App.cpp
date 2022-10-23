@@ -11,7 +11,7 @@ namespace clf
 
 	void App::Run()
 	{
-		while (!window.ShouldClose())
+		while (!window.IsClosed())
 		{
 			glfwPollEvents();
 			renderer.DrawFrame();

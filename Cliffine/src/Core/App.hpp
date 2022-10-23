@@ -15,8 +15,8 @@ namespace clf
 		App();
 		~App() {}
 
-		static const App& Get() { return *instance; }
-		const Window& GetWindow() const { return window; }
+		static App* Get() { return instance; }
+		Window& GetWindow() { return window; }
 		void Run();
 
 	private:
