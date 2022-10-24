@@ -13,6 +13,7 @@ namespace clf
 	{
 		while (!window.IsClosed())
 		{
+			//TODO: Draw fram while window resize
 			glfwPollEvents();
 			renderer.DrawFrame();
 		}

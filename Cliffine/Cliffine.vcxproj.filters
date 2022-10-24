@@ -10,7 +10,8 @@
     <ClInclude Include="src\Core\Swapchain.hpp" />
     <ClInclude Include="src\Core\Pipeline.hpp" />
     <ClInclude Include="src\Core\Renderer.hpp" />
-    <ClInclude Include="src\Core\Vertex.hpp" />
+    <ClInclude Include="src\Core\VertexLayout.hpp" />
+    <ClInclude Include="src\Core\Model.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\simple.vert" />
@@ -31,6 +32,7 @@
     <ClCompile Include="src\Core\Swapchain.cpp" />
     <ClCompile Include="src\Core\Pipeline.cpp" />
     <ClCompile Include="src\Core\Renderer.cpp" />
-    <ClCompile Include="src\Core\Vertex.cpp" />
+    <ClCompile Include="src\Core\VertexLayout.cpp" />
+    <ClCompile Include="src\Core\Model.cpp" />
   </ItemGroup>
 </Project>

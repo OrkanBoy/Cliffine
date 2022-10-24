@@ -162,10 +162,11 @@
     <ClInclude Include="src\Core\Entry.hpp" />
     <ClInclude Include="src\Core\Log.hpp" />
     <ClInclude Include="src\Core\Device.hpp" />
+    <ClInclude Include="src\Core\Model.hpp" />
     <ClInclude Include="src\Core\Pipeline.hpp" />
     <ClInclude Include="src\Core\Renderer.hpp" />
     <ClInclude Include="src\Core\Swapchain.hpp" />
-    <ClInclude Include="src\Core\Vertex.hpp" />
+    <ClInclude Include="src\Core\VertexLayout.hpp" />
     <ClInclude Include="src\Core\Window.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -183,10 +184,11 @@
     <ClCompile Include="src\Core\Core.hpp" />
     <ClCompile Include="src\Core\Log.cpp" />
     <ClCompile Include="src\Core\Device.cpp" />
+    <ClCompile Include="src\Core\Model.cpp" />
     <ClCompile Include="src\Core\Pipeline.cpp" />
     <ClCompile Include="src\Core\Renderer.cpp" />
     <ClCompile Include="src\Core\Swapchain.cpp" />
-    <ClCompile Include="src\Core\Vertex.cpp" />
+    <ClCompile Include="src\Core\VertexLayout.cpp" />
     <ClCompile Include="src\Core\Window.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

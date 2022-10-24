@@ -3,13 +3,14 @@
 #include "Pipeline.hpp"
 #include "Swapchain.hpp"
 #include "Device.hpp"
+#include "Model.hpp"
 
 namespace clf
 {
 	class Renderer
 	{
 	public:
-		Renderer(Pipeline& pipeline, Swapchain& swapchain, Device& device);
+		Renderer(Pipeline& pipeline, Swapchain& swapchain, Device& device, Model& model);
 		~Renderer();
 
 		void DrawFrame();
@@ -18,6 +19,7 @@ namespace clf
 		Pipeline& pipeline;
 		Swapchain& swapchain;
 		Device& device;
+		Model& model;
 
 		VkCommandPool commandPool;
 		vec<VkCommandBuffer> commandBuffers;
@@ -32,6 +34,6 @@ namespace clf
 		void InitCommandBuffers();
 		void InitSyncObjects();
 
-		void SetCommandBuffer(const u32& imageIndex);
+		void SetCommandBuffer();
 	};
 }

@@ -19,9 +19,9 @@ namespace clf
     VkFormat ToFormat(const AttributeType type);
     u32 GetSize(const AttributeType type);
 
-    struct VertexBufferLayout
+    struct VertexLayout
     {
-        VertexBufferLayout(const span<const AttributeType>& types);
+        VertexLayout(const std::initializer_list<const AttributeType> types);
 
         u32 stride = 0;
         vec<VkVertexInputAttributeDescription> attributes;

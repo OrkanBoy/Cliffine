@@ -1,4 +1,4 @@
-#include "Vertex.hpp"
+#include "VertexLayout.hpp"
 
 namespace clf
 {
@@ -41,10 +41,24 @@ namespace clf
 		}
 	}
 
-	VertexBufferLayout::VertexBufferLayout(const span<const AttributeType>& types) 
+	VertexLayout::VertexLayout(const std::initializer_list<const AttributeType> types)
+		: stride(0)
 	{
-		for (u32 i = 0; i < types.size(); i++)
-			attributes[i] = { i++, 0, ToFormat(types[i]), stride += GetSize(types[i]) };
+		u32 i = 0;
+		attributes.resize(types.size());
+
+		for (auto& type : types)
+		{
+			VkVertexInputAttributeDescription attribute;
+			attribute.binding = 0;
+			attribute.format = ToFormat(type);
+			attribute.location = i;
+			attribute.offset = stride;
+
+			attributes[i] = attribute;
+			stride += GetSize(type);
+			i++;
+		}
 
 		bindingDescription = {0, stride, VK_VERTEX_INPUT_RATE_VERTEX};
 	}

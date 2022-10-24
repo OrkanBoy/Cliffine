@@ -4,8 +4,8 @@
 
 namespace clf
 {
-	Pipeline::Pipeline(Device& device, Swapchain& swapchain)
-		: device(device), swapchain(swapchain)
+	Pipeline::Pipeline(Device& device, Swapchain& swapchain, const VertexLayout& vertexLayout)
+		: device(device), swapchain(swapchain), vertexLayout(vertexLayout)
 	{
 		InitPipeline();
 	}
@@ -58,8 +58,10 @@ namespace clf
 		}
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputInfo.vertexBindingDescriptionCount = 0;
-        vertexInputInfo.vertexAttributeDescriptionCount = 0;
+        vertexInputInfo.vertexBindingDescriptionCount = 1;
+        vertexInputInfo.vertexAttributeDescriptionCount = (u32)vertexLayout.attributes.size();
+        vertexInputInfo.pVertexBindingDescriptions = &vertexLayout.bindingDescription;
+        vertexInputInfo.pVertexAttributeDescriptions = vertexLayout.attributes.data();
 
         VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
         inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

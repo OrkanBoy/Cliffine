@@ -161,6 +161,36 @@ namespace clf
 		return createInfo;
 	}
 
+	void Device::CreateBuffer(
+		const VkDeviceSize& size,
+		const VkBufferUsageFlags& usage,
+		const VkMemoryPropertyFlags& props,
+		VkBuffer& outBuffer,
+		VkDeviceMemory& outMemory)
+	{
+		VkBufferCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		createInfo.size = size;
+		createInfo.usage = usage;
+		createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		CLF_ASSERT(vkCreateBuffer(logicalDevice, &createInfo, nullptr, &outBuffer) == VK_SUCCESS,
+			"Failed to create Vertex Buffer!");
+
+		VkMemoryRequirements requirements;
+		vkGetBufferMemoryRequirements(logicalDevice, outBuffer, &requirements);
+
+		VkMemoryAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.allocationSize = requirements.size;
+		allocInfo.memoryTypeIndex = FindMemoryType(requirements.memoryTypeBits, props);
+
+		CLF_ASSERT(vkAllocateMemory(logicalDevice, &allocInfo, nullptr, &outMemory) == VK_SUCCESS,
+			"Failed to allocate buffer memory");
+
+		vkBindBufferMemory(logicalDevice, outBuffer, outMemory, 0);
+	}
+
 	void Device::CheckValidationLayerSupport() const
 	{
 		uint32_t layerCount;
@@ -264,6 +294,16 @@ namespace clf
 
 
 		return details;
+	}
+
+	const u32 Device::FindMemoryType(u32 typeFilter, VkMemoryPropertyFlags props) const
+	{
+		VkPhysicalDeviceMemoryProperties deviceProps;
+		vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceProps);
+		for (u32 i = 0; i < deviceProps.memoryTypeCount; i++)
+			if ((typeFilter & (1 << i)) &&
+				(deviceProps.memoryTypes[i].propertyFlags & props) == props)
+				return i;
 	}
 
 	const vec<const char*> Device::GetRequiredExtensions() const

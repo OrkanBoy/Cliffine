@@ -2,8 +2,8 @@
 
 namespace clf
 {
-	Renderer::Renderer(Pipeline& pipeline, Swapchain& swapchain, Device& device)
-		: pipeline(pipeline), swapchain(swapchain), device(device), currentFrame(0)
+	Renderer::Renderer(Pipeline& pipeline, Swapchain& swapchain, Device& device, Model& model)
+		: pipeline(pipeline), swapchain(swapchain), device(device), model(model), currentFrame(0)
 	{
 		InitCommandPool();
 		InitCommandBuffers();
@@ -73,11 +73,11 @@ namespace clf
 	{
 		vkWaitForFences(device.GetLogicalDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
-		u32 imageIndex;
-		VkResult result = vkAcquireNextImageKHR(device.GetLogicalDevice(), swapchain.GetNative(), UINT64_MAX, imageAvailableSemaphores[currentFrame], nullptr, &imageIndex);
+		VkResult result = vkAcquireNextImageKHR(device.GetLogicalDevice(), swapchain.GetNative(), UINT64_MAX, imageAvailableSemaphores[currentFrame], nullptr, &currentFrame);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR)
 		{
 			swapchain.Reinit();
+			currentFrame = 0;
 			return;
 		}
 		else CLF_ASSERT(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR,
@@ -86,7 +86,7 @@ namespace clf
 		vkResetFences(device.GetLogicalDevice(), 1, &inFlightFences[currentFrame]);
 
 		vkResetCommandBuffer(commandBuffers[currentFrame], 0);
-		SetCommandBuffer(imageIndex);
+		SetCommandBuffer();
 
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -102,7 +102,6 @@ namespace clf
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = &renderFinishedSemaphores[currentFrame];
 
-		//TODO: Sometimes error from unminimising
 		CLF_ASSERT(vkQueueSubmit(device.GetGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) == VK_SUCCESS,
 			"Failed to submit draw Command Buffer!");
 
@@ -113,21 +112,22 @@ namespace clf
 
 		presentInfo.swapchainCount = 1;
 		presentInfo.pSwapchains = &swapchain.GetNative();
-		presentInfo.pImageIndices = &imageIndex;
+		presentInfo.pImageIndices = &currentFrame;
 
 		result = vkQueuePresentKHR(device.GetPresentQueue(), &presentInfo);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || device.GetWindow().framebufferResized)
 		{
 			swapchain.Reinit();
-			device.GetWindow().framebufferResized = false;
+			currentFrame = 0;
+			return;
 		}
-		else CLF_ASSERT(result == VK_SUCCESS,
+		else CLF_ASSERT(result == VK_SUCCESS, 
 			"Failed to acquire present image!");
-
+		
 		currentFrame = (currentFrame + 1) % swapchain.GetImageCount();
 	}
 
-	void Renderer::SetCommandBuffer(const u32& imageIndex)
+	void Renderer::SetCommandBuffer()
 	{
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -139,7 +139,7 @@ namespace clf
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = swapchain.GetRenderPass();
-		renderPassInfo.framebuffer = swapchain.GetFramebuffer(imageIndex);
+		renderPassInfo.framebuffer = swapchain.GetFramebuffer(currentFrame);
 		renderPassInfo.renderArea.offset = { 0, 0 };
 		renderPassInfo.renderArea.extent = swapchain.GetExtent();
 
@@ -164,7 +164,8 @@ namespace clf
 		scissor.extent = swapchain.GetExtent();
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+		model.Bind(commandBuffer);
+		model.Draw(commandBuffer);
 
 		vkCmdEndRenderPass(commandBuffer);
 		CLF_ASSERT(vkEndCommandBuffer(commandBuffer) == VK_SUCCESS,

@@ -48,6 +48,13 @@ namespace clf
 		VkDevice& GetLogicalDevice() { return logicalDevice; }
 		VkQueue& GetGraphicsQueue() { return graphicsQueue; }
 		VkQueue& GetPresentQueue() { return presentQueue; }
+
+		void CreateBuffer(
+			const VkDeviceSize& size,
+			const VkBufferUsageFlags& usage,
+			const VkMemoryPropertyFlags& props,
+			VkBuffer& outBuffer,
+			VkDeviceMemory& outMemory);
 	private:
 #ifdef NDEBUG
 		const bool enableValidationLayers = false;
@@ -84,10 +91,11 @@ namespace clf
 		void CheckExtensionSupport() const;
 
 		const bool IsDeviceSuited(const VkPhysicalDevice& device) const;
-		const bool IsDeviceExtensionSupported(const VkPhysicalDevice& devic) const;
+		const bool IsDeviceExtensionSupported(const VkPhysicalDevice& device) const;
 
 		const QueueFamilies FindQueueFamilies(const VkPhysicalDevice& device) const;
 		const SwapchainDetails FindSwapchainDetails(const VkPhysicalDevice& device) const;
+		const u32 FindMemoryType(u32 typeFilter, VkMemoryPropertyFlags props) const;
 
 		const vec<const char*> GetRequiredExtensions() const;
 	};
