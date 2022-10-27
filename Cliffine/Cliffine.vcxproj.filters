@@ -1,17 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="src\Cliffine.hpp" />
-    <ClInclude Include="src\Core\App.hpp" />
-    <ClInclude Include="src\Core\Window.hpp" />
-    <ClInclude Include="src\Core\Log.hpp" />
-    <ClInclude Include="src\Core\Entry.hpp" />
-    <ClInclude Include="src\Core\Device.hpp" />
-    <ClInclude Include="src\Core\Swapchain.hpp" />
-    <ClInclude Include="src\Core\Pipeline.hpp" />
-    <ClInclude Include="src\Core\Renderer.hpp" />
-    <ClInclude Include="src\Core\VertexLayout.hpp" />
-    <ClInclude Include="src\Core\Model.hpp" />
+    <ClInclude Include="src\Cliffine.h" />
+    <ClInclude Include="src\Core\Log.h" />
+    <ClInclude Include="src\Core\Entry.h" />
+    <ClInclude Include="src\Core\Asserts.h" />
+    <ClInclude Include="src\Platform\Platform.h" />
+    <ClInclude Include="src\Core\App.h" />
+    <ClInclude Include="src\Core\Mem.h" />
+    <ClInclude Include="src\Core\Event.h" />
+    <ClInclude Include="src\Structs\DArray.h" />
+    <ClInclude Include="src\Structs\String.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\simple.vert" />
@@ -25,14 +24,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Core\Log.cpp" />
+    <ClCompile Include="src\Defines.h" />
+    <ClCompile Include="src\Platform\PlatformWin32.cpp" />
     <ClCompile Include="src\Core\App.cpp" />
-    <ClCompile Include="src\Core\Window.cpp" />
-    <ClCompile Include="src\Core\Core.hpp" />
-    <ClCompile Include="src\Core\Device.cpp" />
-    <ClCompile Include="src\Core\Swapchain.cpp" />
-    <ClCompile Include="src\Core\Pipeline.cpp" />
-    <ClCompile Include="src\Core\Renderer.cpp" />
-    <ClCompile Include="src\Core\VertexLayout.cpp" />
-    <ClCompile Include="src\Core\Model.cpp" />
+    <ClCompile Include="src\Core\Mem.cpp" />
+    <ClCompile Include="src\Structs\String.cpp" />
   </ItemGroup>
 </Project>

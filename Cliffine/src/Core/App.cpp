@@ -1,23 +1,40 @@
-#include "App.hpp"
-#include "Log.hpp"
+#include "App.h"
+#include "Asserts.h"
+#include "Mem.h"
 
-namespace clf
+#include "Structs/String.h"
+#include "Structs/DArray.h"
+
+namespace Clf
 {
 	App* App::instance = nullptr;
-	App::App()
-	{
-		instance = this;
+
+	void App::Init() {
+		CLF_ASSERT(!instance, "Client Application already exists!");
+		Mem::Init();
+		instance = Create();
+
+		Platform::Init(
+			instance->name,
+			instance->x, instance->y,
+			instance->width, instance->height);
+		Log::Init();
 	}
 
-	void App::Run()
-	{
-		while (!window.IsClosed())
-		{
-			//TODO: Draw fram while window resize
-			glfwPollEvents();
-			renderer.DrawFrame();
-		}
+	void App::Deinit() {
+		CLF_ASSERT(instance, "Trying do destroy absent Client Application.");
+		instance->~App();
 
-		device.WaitIdle();
+		Log::Deinit();
+		Platform::Deinit();
+		Mem::Deinit();
 	}
+
+	void App::Run() {
+		Mem::OutAllocs();
+
+		while (true)
+			Platform::PollEvents();
+	}
+
 }
