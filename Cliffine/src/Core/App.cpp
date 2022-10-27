@@ -2,8 +2,7 @@
 #include "Asserts.h"
 #include "Mem.h"
 
-#include "Structs/String.h"
-#include "Structs/DArray.h"
+#include "Core/Event.h"
 
 namespace Clf
 {
@@ -34,7 +33,16 @@ namespace Clf
 		Mem::OutAllocs();
 
 		while (true)
+		{
 			Platform::PollEvents();
+
+			for ()
+			{
+
+			}
+			Event::eventQueue--;
+		}
 	}
 
+	
 }

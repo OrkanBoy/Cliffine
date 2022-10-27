@@ -34,13 +34,13 @@ namespace Clf
 
 		char& operator[](const i32& index);
 
-		const String& operator=(const String& other);
+		void operator=(const String& other);
 
 		const String operator+(const String& rhs) const;
-		const String& operator+=(const String& other);
+		void operator+=(const String& other);
 
 		const String operator*(const u32& n) const;
-		const String& operator*=(const u32& n);
+		void operator*=(const u32& n);
 
 		//TODO: implement split(/) operator 
 		//const DArray<const String> operator/(const String& other) const;

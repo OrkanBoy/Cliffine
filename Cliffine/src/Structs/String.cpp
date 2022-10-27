@@ -50,17 +50,15 @@ namespace Clf
 		return this->buffer[index];
 	}
 
-	const String& String::operator=(const String& other)
+	void String::operator=(const String& other)
 	{
 		if (this->buffer == other.buffer)
-			return this->buffer;
+			return;
 		this->~String();
 
 		this->len = other.len;
 		this->buffer = (char*)Mem::Alloc(Mem::MEM_TYPE_STRING, this->len + 1);
 		Mem::Copy(this->buffer, other.buffer, this->len + 1);
-
-		return this->buffer;
 	}
 
 	const String String::operator+(const String& other) const {
@@ -73,7 +71,7 @@ namespace Clf
 		return String{ newBuffer, newLen };
 	}
 
-	const String& String::operator+=(const String& other) {
+	void String::operator+=(const String& other) {
 		u32 newLen = this->len + other.len;
 		char* newBuffer = (char*)Mem::Alloc(Mem::MEM_TYPE_STRING, newLen + 1);
 
@@ -83,7 +81,6 @@ namespace Clf
 		this->~String();
 		this->buffer = newBuffer;
 		this->len = newLen;
-		return *this;
 	}
 
 	const String String::operator*(const u32& n) const
@@ -97,7 +94,7 @@ namespace Clf
 		return String{ newBuffer, newLen };
 	}
 
-	const String& String::operator*=(const u32& n) {
+	void String::operator*=(const u32& n) {
 		u32 newLen = this->len * n;
 		char* newBuffer = (char*)Mem::Alloc(Mem::MEM_TYPE_STRING, newLen + 1);
 
@@ -107,7 +104,6 @@ namespace Clf
 		this->~String();
 		this->buffer = newBuffer;
 		this->len = newLen;
-		return *this;
 	}
 
 	const bool String::operator==(const String& other) const {

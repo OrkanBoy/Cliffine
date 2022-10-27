@@ -11,6 +11,8 @@
     <ClInclude Include="src\Core\Event.h" />
     <ClInclude Include="src\Structs\DArray.h" />
     <ClInclude Include="src\Structs\String.h" />
+    <ClInclude Include="src\Structs\List.h" />
+    <ClInclude Include="src\Structs\Queue.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\simple.vert" />
@@ -29,5 +31,6 @@
     <ClCompile Include="src\Core\App.cpp" />
     <ClCompile Include="src\Core\Mem.cpp" />
     <ClCompile Include="src\Structs\String.cpp" />
+    <ClCompile Include="src\Core\Event.cpp" />
   </ItemGroup>
 </Project>

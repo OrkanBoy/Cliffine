@@ -13,6 +13,8 @@ namespace Clf
 			MEM_TYPE_APP,
 			MEM_TYPE_STRING,
 			MEM_TYPE_DARRAY,
+			MEM_TYPE_LIST,
+			MEM_TYPE_QUEUE,
 			MEM_TYPE_MAX
 		};
 		

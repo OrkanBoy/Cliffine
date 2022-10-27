@@ -39,7 +39,9 @@ namespace Clf
 			"UNKNOWN",
 			"GAME   ",
 			"STRING ",
-			"DARRAY "
+			"DARRAY ",
+			"LIST   ",
+			"QUEUE  "
 		};
 
 		constexpr u32 KiB = 1024;

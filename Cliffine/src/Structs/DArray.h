@@ -1,6 +1,7 @@
 #pragma once
 #include "Defines.h"
 #include "Core/Mem.h"
+#include "Core/Asserts.h"
 
 namespace Clf
 {
@@ -14,9 +15,6 @@ namespace Clf
 		u32 maxLen = 0;
 		u32 incLen = 4;
 	public:
-
-		friend bool operator<(const T& elem, const DArray& arr) { return arr > elem; }
-
 		DArray(u32 maxLen) : maxLen(maxLen) {
 			this->buffer = (T*)Mem::Alloc(Mem::MEM_TYPE_DARRAY, sizeof(T) * maxLen);
 		}
@@ -39,9 +37,8 @@ namespace Clf
 		const bool Contains(const T& elem) const { return *this > elem; }
 		const u32 GetLen() const { return this->len; }
 
-		T& operator[](i32& index) {
-			if (index < 0)
-			{
+		T& operator[](i32 index) {
+			if (index < 0) {
 				CLF_ASSERT(-index >= this->len, "Index out of bounds");
 				return this->buffer[this->len + index];
 			}
@@ -61,42 +58,47 @@ namespace Clf
 			Mem::Copy(newBuffer, this->buffer, sizeof(T) * this->len);
 		}
 
-		const DArray& operator+=(const T& elem) {
-			if (this->len == this->maxLen)
-			{
+		void operator+=(const T& elem) {
+			if (this->len == this->maxLen) {
 				this->maxLen += this->incLen;
-				T* newBuffer = (T*)Mem::Alloc(Mem::MEM_TYPE_DARRAY, this->maxLen * sizeof(T));
+				T* buffer = (T*)Mem::Alloc(Mem::MEM_TYPE_DARRAY, sizeof(T) * this->maxLen);
+
+				Mem::Copy(buffer, this->buffer, sizeof(T) * len);
+				this->~DArray();
+				this->buffer = buffer;
 			}
 
 			Mem::Copy(this->buffer + this->len, &elem, sizeof(T));
 			this->len++;
-			return *this;
 		}
 
-		const bool operator-=(const T& elem) {
+		const T* operator-=(const T& elem) {
 			for (u32 i = 0; i < this->len; i++)
-				if (elem == this->buffer[i])
-				{
+				if (elem == this->buffer[i]) {
 					this->buffer[i].~T();
 					this->len--;
 
+					Mem::Copy(this->buffer, this->buffer + i + 1, sizeof(T) * (this->len - i));
 					//TODO:
 					//constexpr u32 DISP_FCTR = 3;
 					//gapLens = this->maxLen - this->len;
 					//if (gapLen < this->incLen * DISP_FCTR)
 					//	Mem::Free(Mem::MEM_TYPE_DARRAY, this->buffer + this->len, sizeof(T) * gapLen);
 
-					return true;
+					if (i + 1 < len)
+						return buffer[i + 1];
+					return nullptr;
 				}
-			return false;
+			return nullptr;
 		}
 
-		const bool operator>(const T& elem)
-		{
+		const bool operator>(const T& elem) {
 			for (u32 i = 0; i < this->len; i++)
 				if (this->buffer[i] == elem)
 					return true;
 			return false;
 		}
+
+		friend bool operator<(const T& elem, const DArray& arr) { return arr > elem; }
 	};
 }
