@@ -15,6 +15,8 @@ namespace Clf
 		u32 maxLen = 0;
 		u32 incLen = 4;
 	public:
+		DArray() = default;
+
 		DArray(u32 maxLen) : maxLen(maxLen) {
 			this->buffer = (T*)Mem::Alloc(Mem::MEM_TYPE_DARRAY, sizeof(T) * maxLen);
 		}

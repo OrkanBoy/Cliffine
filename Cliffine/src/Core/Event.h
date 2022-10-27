@@ -10,13 +10,19 @@ namespace Clf
 	public:
 		struct Args {};
 		using Listener = bool(*)(Args);
+		
+		static const Queue<Event*>& GetQueue() { return queue; }
 
-		static Queue<Event> eventQueue;
-		
-		DArray<Listener> listeners;
+	private:
+		static Queue<Event*> queue;
+
+		DArray<bool(*)(Args)> listeners{};
+		void operator()();
+	
+	public:
 		Args args;
-		Event(DArray<Listener> listeners);
-		
-		const bool Fire();
+		Event(const DArray<Listener>& listeners) : listeners(listeners){}
+		void Queue(Args args);
+		friend class App;
 	};
 }

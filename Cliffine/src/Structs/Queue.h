@@ -10,7 +10,7 @@ namespace Clf
 	template<typename T>
 	struct Queue
 	{
-		//private:
+	private:
 		T* buffer = nullptr;
 		u32 in = 0;
 		u32 out = 0;

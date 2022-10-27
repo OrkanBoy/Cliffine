@@ -36,11 +36,11 @@ namespace Clf
 		{
 			Platform::PollEvents();
 
-			for ()
+			if (Event::queue.GetLen())
 			{
-
+				(*Event::queue[0])();
+				Event::queue--;
 			}
-			Event::eventQueue--;
 		}
 	}
 
